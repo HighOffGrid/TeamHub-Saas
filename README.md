@@ -15,17 +15,17 @@ Além das funcionalidades de domínio, o projeto também incorpora preocupaçõe
 ---
 
 ## Principais funcionalidades
-• Cadastro de usuários.
-• Login com autenticação JWT.
-• Hash seguro de senha com suporte a bibliotecas apropriadas para proteção de credenciais.
-• Gestão de organizações.
-• Gestão de memberships entre usuários e organizações.
-• Gestão de projetos.
-• Gestão de tarefas.
-• Rate limiting em endpoints sensíveis.
-• Registro de eventos com BackgroundTasks.
-• Configuração por variáveis de ambiente.
-• Base preparada para múltiplos ambientes e evolução de infraestrutura.
+- Cadastro de usuários.
+- Login com autenticação JWT.
+- Hash seguro de senha com suporte a bibliotecas apropriadas para proteção de credenciais.
+- Gestão de organizações.
+- Gestão de memberships entre usuários e organizações.
+- Gestão de projetos.
+- Gestão de tarefas.
+- Rate limiting em endpoints sensíveis.
+- Registro de eventos com BackgroundTasks.
+- Configuração por variáveis de ambiente.
+- Base preparada para múltiplos ambientes e evolução de infraestrutura.
 
 ---
 
@@ -41,43 +41,43 @@ A modelagem usa SQLModel sobre SQLAlchemy, combinando ergonomia de declaração 
 
 Backend e API
 
-• FastAPI
-• Starlette
-• Uvicorn
-• Pydantic
-• Pydantic Settings
+- FastAPI
+- Starlette
+- Uvicorn
+- Pydantic
+- Pydantic Settings
 
 
 ## Persistência e banco de dados
 
-• SQLModel
-• SQLAlchemy 2
-• Alembic
-• Psycopg / Psycopg Binary
-• SQLite e/ou PostgreSQL, conforme ambiente
+- SQLModel
+- SQLAlchemy 2
+- Alembic
+- Psycopg / Psycopg Binary
+- SQLite e/ou PostgreSQL, conforme ambiente
 
 
 ## Segurança e autenticação
 
-• python-jose
-• passlib
-• argon2-cffi
-• python-multipart
-• email-validator
+- python-jose
+- passlib
+- argon2-cffi
+- python-multipart
+- email-validator
 
 
 ## Cache e recursos operacionais
 
-• Redis
-• BackgroundTasks do FastAPI
+- Redis
+- BackgroundTasks do FastAPI
 
 
 ## Testes e qualidade
 
-• Pytest
-• pytest-cov
-• coverage
-• httpx
+- Pytest
+- pytest-cov
+- coverage
+- httpx
 
 ---
 
