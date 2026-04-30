@@ -1,0 +1,18 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: teamhub_postgres
+    environment:
+      POSTGRES_DB: teamhub
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgresql
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    container_name: teamhub_redis
+    ports:
+      - "6379:6379"
