@@ -4,6 +4,7 @@ from app.core.database import get_session
 from app.core.deps import get_current_user
 from app.models import Task, User, Project, Membership
 from app.schemas.task import TaskCreate, TaskOut, TaskUpdate
+from datetime import datetime, timezone
 
 router = APIRouter()
 
@@ -40,13 +41,23 @@ def list_tasks(project_id: str, session: Session = Depends(get_session), current
     return tasks
 
 @router.patch("/{task_id}", response_model=TaskOut)
-def update_task(task_id: str, payload: TaskUpdate, session: Session = Depends(get_session), current_user: User = Depends(get_current_user),):
+def update_task(
+    task_id: str,
+    payload: TaskUpdate,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+):
     task = session.get(Task, task_id)
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
+
     _check_project_access(current_user.id, task.project_id, session)
+
     for key, value in payload.model_dump(exclude_unset=True).items():
         setattr(task, key, value)
+
+    task.updated_at = datetime.now(timezone.utc)
+
     session.add(task)
     session.commit()
     session.refresh(task)
