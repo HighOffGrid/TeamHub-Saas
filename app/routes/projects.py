@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, select
+from datetime import datetime, timezone
 
 from app.core.database import get_session
 from app.dependencies.auth import get_current_user
@@ -88,6 +89,8 @@ def update_project(
 
     for key, value in update_data.items():
         setattr(project, key, value)
+
+    project.updated_at = datetime.now(timezone.utc)
 
     session.add(project)
     session.commit()
