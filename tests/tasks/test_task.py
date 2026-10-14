@@ -253,3 +253,62 @@ def test_update_task_updates_timestamp_and_preserves_fields(
         if task["id"] == before["id"]
     )
     assert persisted == after
+
+
+def test_non_member_cannot_access_project_tasks(
+    client, auth_headers, other_user_headers
+):
+    org = create_org(client, auth_headers)
+    project = create_project(client, auth_headers, org["id"])
+
+    create_response, _ = create_task(
+        client,
+        auth_headers,
+        project["id"],
+        title="Protected task",
+    )
+    assert create_response.status_code == 201, create_response.text
+    original_task = create_response.json()
+
+    denied_responses = [
+        client.get(
+            "/api/v1/tasks",
+            params={"project_id": project["id"]},
+            headers=other_user_headers,
+        ),
+        client.post(
+            "/api/v1/tasks",
+            json={
+                "title": "Unauthorized task",
+                "project_id": project["id"],
+                "priority": "medium",
+            },
+            headers=other_user_headers,
+        ),
+        client.patch(
+            f"/api/v1/tasks/{original_task['id']}",
+            json={"status": "done"},
+            headers=other_user_headers,
+        ),
+        client.delete(
+            f"/api/v1/tasks/{original_task['id']}",
+            headers=other_user_headers,
+        ),
+    ]
+
+    for response in denied_responses:
+        assert response.status_code == 403, response.text
+        assert response.json()["detail"] == (
+            "Not authorized to access this project"
+        )
+
+    owner_response = client.get(
+        "/api/v1/tasks",
+        params={"project_id": project["id"]},
+        headers=auth_headers,
+    )
+    assert owner_response.status_code == 200, owner_response.text
+
+    tasks = owner_response.json()
+    assert len(tasks) == 1
+    assert tasks[0] == original_task
