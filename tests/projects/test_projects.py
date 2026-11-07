@@ -149,8 +149,15 @@ def test_update_project_not_found(client, auth_headers):
     assert response.json()["detail"] == "Project not found"
 
 
-def test_create_project_forbidden_for_non_member(client, auth_headers, other_user_headers):
-    org = create_org(client, auth_headers, name="Private Org", slug="private-org")
+def test_create_project_forbidden_for_non_member(
+    client, auth_headers, other_user_headers
+):
+    org = create_org(
+        client,
+        auth_headers,
+        name="Private Org",
+        slug="private-org",
+    )
 
     payload = {
         "name": "Forbidden Project",
@@ -164,4 +171,131 @@ def test_create_project_forbidden_for_non_member(client, auth_headers, other_use
         headers=other_user_headers,
     )
 
-    assert response.status_code in (403, 404), response.text
+    assert response.status_code == 403, response.text
+    assert response.json()["detail"] == (
+        "You are not a member of this organization"
+    )
+
+    owner_response = client.get(
+        "/api/v1/projects",
+        params={"organization_id": org["id"]},
+        headers=auth_headers,
+    )
+    assert owner_response.status_code == 200, owner_response.text
+    assert owner_response.json() == []
+
+
+def test_list_projects_forbidden_for_non_member(
+    client, auth_headers, other_user_headers
+):
+    org = create_org(
+        client,
+        auth_headers,
+        name="Private List Org",
+        slug="private-list-org",
+    )
+
+    create_response = client.post(
+        "/api/v1/projects",
+        json={
+            "name": "Private Project",
+            "description": "Must not be visible to non-members",
+            "organization_id": org["id"],
+        },
+        headers=auth_headers,
+    )
+    assert create_response.status_code == 201, create_response.text
+
+    response = client.get(
+        "/api/v1/projects",
+        params={"organization_id": org["id"]},
+        headers=other_user_headers,
+    )
+
+    assert response.status_code == 403, response.text
+    assert response.json()["detail"] == (
+        "You are not a member of this organization"
+    )
+
+
+def test_update_project_forbidden_for_non_member(
+    client, auth_headers, other_user_headers
+):
+    org = create_org(
+        client,
+        auth_headers,
+        name="Private Update Org",
+        slug="private-update-org",
+    )
+
+    create_response = client.post(
+        "/api/v1/projects",
+        json={
+            "name": "Protected Project",
+            "description": "Original description",
+            "organization_id": org["id"],
+        },
+        headers=auth_headers,
+    )
+    assert create_response.status_code == 201, create_response.text
+    original_project = create_response.json()
+
+    response = client.patch(
+        f"/api/v1/projects/{original_project['id']}",
+        json={
+            "name": "Unauthorized change",
+            "description": "Must not be saved",
+        },
+        headers=other_user_headers,
+    )
+
+    assert response.status_code == 403, response.text
+    assert response.json()["detail"] == (
+        "You are not a member of this organization"
+    )
+
+    owner_response = client.get(
+        "/api/v1/projects",
+        params={"organization_id": org["id"]},
+        headers=auth_headers,
+    )
+    assert owner_response.status_code == 200, owner_response.text
+
+    projects = owner_response.json()
+    assert len(projects) == 1
+    assert projects[0] == original_project
+
+
+def test_update_project_updates_updated_at(client, auth_headers):
+    org = create_org(
+        client,
+        auth_headers,
+        name="Updated At Org",
+        slug="updated-at-org",
+    )
+
+    create_response = client.post(
+        "/api/v1/projects",
+        json={
+            "name": "Timestamp Project",
+            "description": "Original description",
+            "organization_id": org["id"],
+        },
+        headers=auth_headers,
+    )
+    assert create_response.status_code == 201, create_response.text
+
+    original_project = create_response.json()
+    original_updated_at = original_project["updated_at"]
+
+    update_response = client.patch(
+        f"/api/v1/projects/{original_project['id']}",
+        json={"name": "Updated Timestamp Project"},
+        headers=auth_headers,
+    )
+    assert update_response.status_code == 200, update_response.text
+
+    updated_project = update_response.json()
+
+    assert updated_project["name"] == "Updated Timestamp Project"
+    assert updated_project["updated_at"] > original_updated_at

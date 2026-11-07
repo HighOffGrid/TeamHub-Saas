@@ -182,6 +182,7 @@ def test_delete_task_not_found(client, auth_headers):
     assert response.status_code == 404, response.text
     assert response.json()["detail"] == "Task not found"
 
+
 def test_update_task_updates_timestamp_and_preserves_fields(
     client, auth_headers, monkeypatch
 ):
