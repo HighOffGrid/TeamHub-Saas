@@ -1,4 +1,5 @@
 # TeamHub SaaS API
+![CI](https://github.com/HighOffGrid/TeamHub-Saas/actions/workflows/ci.yml/badge.svg)
 
 API backend para uma plataforma colaborativa de gestão de equipes, desenvolvida com FastAPI. O projeto permite autenticação de usuários, organizações, memberships, projetos e tarefas, com controles adicionais de segurança e infraestrutura.
 
