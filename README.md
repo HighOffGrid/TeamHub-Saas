@@ -1,5 +1,19 @@
 # TeamHub SaaS API
 
+## Demonstração online
+
+- Documentação interativa (Swagger): https://teamhub-saas.onrender.com/docs
+- Health check: https://teamhub-saas.onrender.com/health
+
+### Como testar
+
+1. Abra a documentação interativa.
+2. Crie um usuário na rota de cadastro.
+3. Faça login com o usuário criado.
+4. Use o token retornado para acessar as rotas autenticadas.
+
+Use apenas dados fictícios e uma senha exclusiva para testes.
+
 API backend para uma plataforma colaborativa de gestão de equipes, desenvolvida com FastAPI. O projeto permite autenticação de usuários, organizações, memberships, projetos e tarefas, com controles adicionais de segurança e infraestrutura.
 
 **Stack:** Python · FastAPI · SQLModel · SQLAlchemy · Alembic · Redis · Docker · Pytest
