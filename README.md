@@ -134,8 +134,7 @@ tests/
 ### 1. Clonar o repositório
 
 ```bash
-git clone [https://github.com/HighOffGrid/TeamHub-Saas.git](https://github.com/HighOffGrid/TeamHub-Saas.git)
-cd TeamHub-Saas
+git clone https://github.com/HighOffGrid/TeamHub-Saas.git
 ```
 
 ### 2. Criar e ativar ambiente virtual
@@ -312,7 +311,4 @@ pytest tests/tasks -q
 
 ## Próximos passos
 
-- Configurar CI com GitHub Actions para executar a suíte de testes a cada push.
-- Publicar a API em ambiente de deploy com PostgreSQL e Redis.
-- Criar um `.env.example` sem segredos para facilitar a configuração local.
 - Revisar os endpoints com base no OWASP API Security Top 10.
