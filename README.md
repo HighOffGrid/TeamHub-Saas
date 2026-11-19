@@ -16,7 +16,7 @@ Use apenas dados fictícios e uma senha exclusiva para testes.
 
 API backend para uma plataforma colaborativa de gestão de equipes, desenvolvida com FastAPI. O projeto permite autenticação de usuários, organizações, memberships, projetos e tarefas, com controles adicionais de segurança e infraestrutura.
 
-**Stack:** Python · FastAPI · SQLModel · SQLAlchemy · Alembic · Redis · Docker · Pytest
+**Stack:** Python · FastAPI · SQLModel · SQLAlchemy · Alembic · Redis · Celery · Docker · Pytest
 
 ---
 
@@ -116,7 +116,7 @@ tests/
 | Banco e ORM | SQLModel, SQLAlchemy 2, Alembic |
 | Banco de dados | SQLite e PostgreSQL |
 | Segurança | python-jose, passlib, argon2-cffi, OAuth2 Password Form |
-| Cache e limitação | Redis |
+| Cache | filas | rate limiting | Redis | Celery |
 | Testes | Pytest, pytest-cov, httpx |
 | Infraestrutura | Docker, Docker Compose |
 
