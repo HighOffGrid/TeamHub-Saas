@@ -37,7 +37,7 @@ A aplicação foi organizada em módulos de domínio e infraestrutura, separando
 - Gestão de projetos.
 - Gestão de tarefas.
 - Rate limiting com Redis em endpoints sensíveis.
-- Registro de eventos de auditoria via `BackgroundTasks`.
+- Processamento assíncrono de eventos de auditoria com Celery e Redis (com suporte a retry e worker isolado no Docker).
 - Migrations versionadas com Alembic.
 - Configuração por variáveis de ambiente.
 - Documentação automática da API com Swagger e ReDoc.
