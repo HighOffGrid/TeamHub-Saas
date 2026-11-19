@@ -37,7 +37,7 @@ A aplicação foi organizada em módulos de domínio e infraestrutura, separando
 - Gestão de projetos.
 - Gestão de tarefas.
 - Rate limiting com Redis em endpoints sensíveis.
-- Processamento assíncrono de eventos de auditoria com Celery e Redis (com suporte a retry e worker isolado no Docker).
+- Processamento assíncrono de eventos de auditoria com Celery e Redis.
 - Migrations versionadas com Alembic.
 - Configuração por variáveis de ambiente.
 - Documentação automática da API com Swagger e ReDoc.
@@ -53,6 +53,7 @@ app/
 ├── main.py
 ├── core/
 │   ├── audit.py
+│   ├── celery_app.py
 │   ├── config.py
 │   ├── database.py
 │   ├── rate_limit.py
@@ -99,9 +100,9 @@ tests/
 
 - Separação entre schemas da API e models de persistência.
 - JWT para autenticação de rotas protegidas.
-- Redis para rate limiting.
+- Redis para rate limiting e broker do Celery.
+- Celery para processamento assíncrono de eventos de auditoria.
 - Alembic para controle de versões do banco de dados.
-- Eventos de auditoria executados em background, evitando bloquear a resposta principal.
 - Testes separados por domínio funcional.
 
 ---
@@ -116,7 +117,7 @@ tests/
 | Banco e ORM | SQLModel, SQLAlchemy 2, Alembic |
 | Banco de dados | SQLite e PostgreSQL |
 | Segurança | python-jose, passlib, argon2-cffi, OAuth2 Password Form |
-| Cache | filas | rate limiting | Redis | Celery |
+| Cache, filas e limitação | Redis, Celery |
 | Testes | Pytest, pytest-cov, httpx |
 | Infraestrutura | Docker, Docker Compose |
 
@@ -135,6 +136,7 @@ tests/
 
 ```bash
 git clone https://github.com/HighOffGrid/TeamHub-Saas.git
+cd TeamHub-Saas
 ```
 
 ### 2. Criar e ativar ambiente virtual
@@ -187,6 +189,14 @@ alembic upgrade head
 uvicorn app.main:app --reload
 ```
 
+### 7. Iniciar o worker do Celery
+
+Em outro terminal, execute:
+
+```bash
+celery -A app.core.celery_app worker --loglevel=info
+```
+
 A API ficará disponível em:
 
 - Swagger: `http://127.0.0.1:8000/docs`
@@ -196,7 +206,7 @@ A API ficará disponível em:
 
 ## Docker
 
-O repositório inclui `docker-compose.yml` para facilitar a execução de serviços dependentes, como banco de dados e Redis.
+O repositório inclui `docker-compose.yml` para facilitar a execução de serviços dependentes, como banco de dados, Redis e worker do Celery.
 
 ```bash
 docker compose up --build
@@ -304,7 +314,7 @@ pytest tests/tasks -q
 - Validação de dados de entrada e saída com Pydantic.
 - Rate limiting com Redis para reduzir abuso em endpoints sensíveis.
 - Variáveis de ambiente para configurações e segredos.
-- Eventos de auditoria para ações relevantes de autenticação.
+- Eventos de auditoria processados de forma assíncrona com Celery.
 - Arquivos de log gerados localmente não são versionados.
 
 ---
