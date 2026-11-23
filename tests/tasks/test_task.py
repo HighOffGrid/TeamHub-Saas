@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime, timezone, timedelta
+from unittest.mock import Mock
 
 
 def create_org(client, auth_headers, name="Tasks Org", slug=None):
@@ -257,7 +258,7 @@ def test_update_task_updates_timestamp_and_preserves_fields(
 
 
 def test_non_member_cannot_access_project_tasks(
-    client, auth_headers, other_user_headers
+    client, auth_headers, other_user_headers, monkeypatch
 ):
     org = create_org(client, auth_headers)
     project = create_project(client, auth_headers, org["id"])
@@ -270,6 +271,12 @@ def test_non_member_cannot_access_project_tasks(
     )
     assert create_response.status_code == 201, create_response.text
     original_task = create_response.json()
+
+    audit_dispatch = Mock()
+    monkeypatch.setattr(
+        "app.routes.tasks.dispatch_audit_log",
+        audit_dispatch,
+    )
 
     denied_responses = [
         client.get(
@@ -302,6 +309,8 @@ def test_non_member_cannot_access_project_tasks(
         assert response.json()["detail"] == (
             "Not authorized to access this project"
         )
+
+    audit_dispatch.assert_not_called()
 
     owner_response = client.get(
         "/api/v1/tasks",
