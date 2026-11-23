@@ -1,4 +1,4 @@
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlmodel import Session, select
 
@@ -14,7 +14,7 @@ from app.core.rate_limit import (
     enforce_rate_limit,
 )
 from app.core.redis import get_redis
-from app.core.audit import write_audit_log
+from app.core.audit import dispatch_audit_log
 
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -24,7 +24,6 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 def register(
     payload: UserCreate,
     request: Request,
-    background_tasks: BackgroundTasks,
     session: Session = Depends(get_session),
 ):
     limiter = RedisRateLimiter(get_redis())
@@ -50,8 +49,7 @@ def register(
     session.commit()
     session.refresh(user)
 
-    background_tasks.add_task(
-        write_audit_log,
+    dispatch_audit_log(
         "register_success",
         str(user.id),
         user.email,
@@ -64,7 +62,6 @@ def register(
 @router.post("/login", response_model=TokenResponse)
 def login(
     request: Request,
-    background_tasks: BackgroundTasks,
     form_data: OAuth2PasswordRequestForm = Depends(),
     session: Session = Depends(get_session),
 ):
@@ -76,8 +73,7 @@ def login(
     ).first()
 
     if not user or not verify_password(form_data.password, user.hashed_password):
-        background_tasks.add_task(
-            write_audit_log,
+        dispatch_audit_log(
             "login_failed",
             "anonymous",
             form_data.username,
@@ -90,8 +86,7 @@ def login(
 
     access_token = create_access_token(str(user.id))
 
-    background_tasks.add_task(
-        write_audit_log,
+    dispatch_audit_log(
         "login_success",
         str(user.id),
         user.email,

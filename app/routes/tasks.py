@@ -1,12 +1,17 @@
+from datetime import datetime, timezone
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
+
+from app.core.audit import dispatch_audit_log
 from app.core.database import get_session
 from app.core.deps import get_current_user
 from app.models import Task, User, Project, Membership
 from app.schemas.task import TaskCreate, TaskOut, TaskUpdate
-from datetime import datetime, timezone
+
 
 router = APIRouter()
+
 
 def _check_project_access(user_id: str, project_id: str, session: Session):
     project = session.get(Project, project_id)
@@ -21,24 +26,51 @@ def _check_project_access(user_id: str, project_id: str, session: Session):
     ).first()
 
     if not membership:
-        raise HTTPException(status_code=403, detail="Not authorized to access this project")
+        raise HTTPException(
+            status_code=403,
+            detail="Not authorized to access this project",
+        )
 
     return project, membership
 
+
 @router.post("", response_model=TaskOut, status_code=201)
-def create_task(payload: TaskCreate, session: Session = Depends(get_session), current_user: User = Depends(get_current_user),):
+def create_task(
+    payload: TaskCreate,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+):
     _check_project_access(current_user.id, payload.project_id, session)
+
     task = Task(**payload.model_dump())
     session.add(task)
     session.commit()
     session.refresh(task)
+
+    dispatch_audit_log(
+        "task_created",
+        str(current_user.id),
+        str(task.id),
+        f"project_id={task.project_id}",
+    )
+
     return task
 
+
 @router.get("", response_model=list[TaskOut])
-def list_tasks(project_id: str, session: Session = Depends(get_session), current_user: User = Depends(get_current_user),):
+def list_tasks(
+    project_id: str,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+):
     _check_project_access(current_user.id, project_id, session)
-    tasks = session.exec(select(Task).where(Task.project_id == project_id)).all()
+
+    tasks = session.exec(
+        select(Task).where(Task.project_id == project_id)
+    ).all()
+
     return tasks
+
 
 @router.patch("/{task_id}", response_model=TaskOut)
 def update_task(
@@ -53,7 +85,9 @@ def update_task(
 
     _check_project_access(current_user.id, task.project_id, session)
 
-    for key, value in payload.model_dump(exclude_unset=True).items():
+    changes = payload.model_dump(exclude_unset=True)
+
+    for key, value in changes.items():
         setattr(task, key, value)
 
     task.updated_at = datetime.now(timezone.utc)
@@ -61,13 +95,42 @@ def update_task(
     session.add(task)
     session.commit()
     session.refresh(task)
+
+    dispatch_audit_log(
+        "task_updated",
+        str(current_user.id),
+        str(task.id),
+        (
+            f"project_id={task.project_id}; "
+            f"fields={','.join(sorted(changes))}"
+        ),
+    )
+
     return task
 
+
 @router.delete("/{task_id}", status_code=204)
-def delete_task(task_id: str, session: Session = Depends(get_session), current_user: User = Depends(get_current_user),):
+def delete_task(
+    task_id: str,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+):
     task = session.get(Task, task_id)
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
+
     _check_project_access(current_user.id, task.project_id, session)
+
+    actor_id = str(current_user.id)
+    target_id = str(task.id)
+    project_id = str(task.project_id)
+
     session.delete(task)
     session.commit()
+
+    dispatch_audit_log(
+        "task_deleted",
+        actor_id,
+        target_id,
+        f"project_id={project_id}",
+    )

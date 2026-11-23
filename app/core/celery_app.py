@@ -5,6 +5,7 @@ celery_app = Celery(
     "teamhub",
     broker=settings.REDIS_URL,
     backend=settings.REDIS_URL,
+    include=["app.core.audit"],
 )
 
 celery_app.conf.update(
