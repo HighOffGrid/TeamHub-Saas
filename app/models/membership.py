@@ -22,6 +22,13 @@ class Membership(SQLModel, table=True):
     __table_args__ = (
         UniqueConstraint("user_id", "organization_id", name="uq_membership_user_organization"),
     )
+    @property
+    def user_email(self) -> Optional[str]:
+        return self.user.email if self.user else None
+
+    @property
+    def user_name(self) -> Optional[str]:
+        return self.user.name if self.user else None
 
     id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
     user_id: str = Field(foreign_key="users.id", index=True)

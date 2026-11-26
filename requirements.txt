@@ -15,3 +15,4 @@ pytest
 pytest-cov
 python-multipart
 email-validator
+psycopg[binary]==3.2.10

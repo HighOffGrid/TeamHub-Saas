@@ -6,7 +6,13 @@ from pydantic import BaseModel, ConfigDict
 
 class OrganizationCreate(BaseModel):
     name: str
-    slug: str
+    description: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class OrganizationUpdate(BaseModel):
+    name: Optional[str] = None
     description: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)

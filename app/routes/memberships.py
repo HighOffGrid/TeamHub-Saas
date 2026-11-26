@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, status
 from sqlmodel import Session, select
-
+from sqlalchemy.orm import selectinload
 from app.core.database import get_session
 from app.core.deps import get_current_user
 from app.models.user import User
@@ -52,7 +52,9 @@ def list_memberships(
         raise HTTPException(status_code=403, detail="You do not belong to this organization")
 
     memberships = session.exec(
-        select(Membership).where(Membership.organization_id == organization_id)
+        select(Membership)
+        .where(Membership.organization_id == organization_id)
+        .options(selectinload(Membership.user))
     ).all()
 
     return memberships
@@ -82,13 +84,14 @@ def change_membership_role(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user),
 ):
-    actor_membership = session.exec(
-        select(Membership).where(Membership.user_id == current_user.id)
-    ).first()
-
-    if not actor_membership:
+    target = session.get(Membership, membership_id)
+    if not target:
         from fastapi import HTTPException
-        raise HTTPException(status_code=403, detail="Membership not found for current user")
+        raise HTTPException(status_code=404, detail="Membership not found")
+
+    actor_membership = get_actor_membership_or_403(
+        target.organization_id, current_user, session
+    )
 
     return update_membership_role(
         session=session,

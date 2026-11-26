@@ -1,13 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, select
 from datetime import datetime, timezone
-
+from app.models.task import Task
 from app.core.database import get_session
 from app.dependencies.auth import get_current_user
 from app.dependencies.permissions import require_role
 from app.models.organization import Organization
 from app.models.project import Project
 from app.models.user import User
+from app.schemas import project
 from app.schemas.project import ProjectCreate, ProjectOut, ProjectUpdate
 
 router = APIRouter()
@@ -97,3 +98,34 @@ def update_project(
     session.refresh(project)
 
     return project
+
+@router.delete("/{project_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_project(
+    project_id: str,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+):
+    project = session.get(Project, project_id)
+
+    if not project:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Project not found",
+        )
+
+    require_role(
+        session=session,
+        user_id=current_user.id,
+        organization_id=project.organization_id,
+        allowed_roles={"owner", "admin"},
+    )
+
+    tasks = session.exec(
+    select(Task).where(Task.project_id == project.id)
+).all()
+
+    for task in tasks:
+        session.delete(task)
+
+    session.delete(project)
+    session.commit()
