@@ -1,32 +1,44 @@
-# TeamHub SaaS API
+# TeamHub SaaS
+
+TeamHub é uma plataforma full-stack para gestão colaborativa de equipes, organizações, projetos e tarefas. O backend é uma API REST construída com FastAPI, e o frontend é uma aplicação React com TypeScript.
 
 ## Demonstração online
 
-- Documentação interativa (Swagger): https://teamhub-saas.onrender.com/docs
-- Health check: https://teamhub-saas.onrender.com/health
+- **Frontend:** https://teamhub-frontend-pi.vercel.app
+- **API:** https://teamhub-saas.onrender.com
+- **Documentação interativa (Swagger):** https://teamhub-saas.onrender.com/docs
+- **Health check:** https://teamhub-saas.onrender.com/health
 
-### Como testar
+> A aplicação está hospedada em serviços gratuitos. A primeira requisição após um período de inatividade pode levar alguns segundos, pois a instância do Render precisa ser iniciada.
 
-1. Abra a documentação interativa.
-2. Crie um usuário na rota de cadastro.
-3. Faça login com o usuário criado.
-4. Use o token retornado para acessar as rotas autenticadas.
+## Como testar
+
+1. Acesse o frontend em produção.
+2. Crie uma conta na tela de registro.
+3. Faça login.
+4. Crie uma organização, um projeto e uma tarefa.
+5. Você também pode testar a API diretamente pelo Swagger.
 
 Use apenas dados fictícios e uma senha exclusiva para testes.
 
-API backend para uma plataforma colaborativa de gestão de equipes, desenvolvida com FastAPI. O projeto permite autenticação de usuários, organizações, memberships, projetos e tarefas, com controles adicionais de segurança e infraestrutura.
+## Stack
 
-**Stack:** Python · FastAPI · SQLModel · SQLAlchemy · Alembic · Redis · Celery · Docker · Pytest
-
----
+| Categoria | Tecnologias |
+|---|---|
+| Backend | Python, FastAPI, Starlette, Uvicorn |
+| Banco de dados e ORM | SQLModel, SQLAlchemy 2, Alembic, SQLite, PostgreSQL |
+| Validação e configuração | Pydantic, Pydantic Settings |
+| Segurança | JWT, OAuth2 Password Form, python-jose, passlib, argon2-cffi |
+| Filas e limitação | Redis, Celery |
+| Frontend | React, TypeScript, Vite, Tailwind CSS, Shadcn UI |
+| Testes | Pytest, pytest-cov, httpx |
+| Infraestrutura | Docker, Docker Compose, Render, Vercel, GitHub Actions |
 
 ## Sobre o projeto
 
-O TeamHub SaaS API é um projeto de backend voltado para cenários de colaboração entre equipes e gestão de trabalho em ambientes organizacionais.
+O TeamHub SaaS API é um projeto de backend para cenários de colaboração entre equipes e gestão de trabalho em ambientes organizacionais.
 
-A aplicação foi organizada em módulos de domínio e infraestrutura, separando rotas, schemas, models e componentes centrais de configuração, segurança, banco de dados, Redis, rate limiting e auditoria. Essa organização torna o código mais fácil de manter e testar.
-
----
+A aplicação é organizada em módulos de domínio e infraestrutura, separando rotas, schemas, models e componentes centrais de configuração, segurança, banco de dados, Redis, rate limiting e auditoria. Essa organização torna o código mais fácil de manter e testar.
 
 ## Funcionalidades
 
@@ -41,12 +53,11 @@ A aplicação foi organizada em módulos de domínio e infraestrutura, separando
 - Migrations versionadas com Alembic.
 - Configuração por variáveis de ambiente.
 - Documentação automática da API com Swagger e ReDoc.
-
----
+- Frontend React para autenticação e gestão de tarefas.
 
 ## Arquitetura
 
-O projeto utiliza uma estrutura modular, com responsabilidades organizadas por camada:
+O backend utiliza uma estrutura modular, com responsabilidades organizadas por camada:
 
 ```text
 app/
@@ -96,7 +107,7 @@ tests/
 └── test_health.py
 ```
 
-### Decisões de projeto
+## Decisões de projeto
 
 - Separação entre schemas da API e models de persistência.
 - JWT para autenticação de rotas protegidas.
@@ -104,24 +115,7 @@ tests/
 - Celery para processamento assíncrono de eventos de auditoria.
 - Alembic para controle de versões do banco de dados.
 - Testes separados por domínio funcional.
-
----
-
-## Tecnologias
-
-| Categoria | Tecnologias |
-|---|---|
-| Linguagem | Python |
-| Framework | FastAPI, Starlette, Uvicorn |
-| Validação e configuração | Pydantic, Pydantic Settings |
-| Banco e ORM | SQLModel, SQLAlchemy 2, Alembic |
-| Banco de dados | SQLite e PostgreSQL |
-| Segurança | python-jose, passlib, argon2-cffi, OAuth2 Password Form |
-| Cache, filas e limitação | Redis, Celery |
-| Testes | Pytest, pytest-cov, httpx |
-| Infraestrutura | Docker, Docker Compose |
-
----
+- Integração contínua com GitHub Actions.
 
 ## Como executar localmente
 
@@ -135,7 +129,7 @@ tests/
 ### 1. Clonar o repositório
 
 ```bash
-git clone https://github.com/HighOffGrid/TeamHub-Saas.git
+git clone [https://github.com/HighOffGrid/TeamHub-Saas.git](https://github.com/HighOffGrid/TeamHub-Saas.git)
 cd TeamHub-Saas
 ```
 
@@ -143,7 +137,7 @@ cd TeamHub-Saas
 
 **Windows**
 
-```powershell
+```bash
 python -m venv venv
 venv\Scripts\activate
 ```
@@ -175,7 +169,7 @@ DATABASE_URL=sqlite:///./app.db
 REDIS_URL=redis://localhost:6379/0
 ```
 
-> O arquivo `.env` deve permanecer apenas na sua máquina e nunca deve ser enviado para o GitHub.
+O arquivo `.env` deve permanecer apenas na sua máquina e nunca deve ser enviado para o GitHub.
 
 ### 5. Aplicar migrations
 
@@ -199,10 +193,8 @@ celery -A app.core.celery_app worker --loglevel=info
 
 A API ficará disponível em:
 
-- Swagger: `http://127.0.0.1:8000/docs`
-- ReDoc: `http://127.0.0.1:8000/redoc`
-
----
+- Swagger: http://127.0.0.1:8000/docs
+- ReDoc: http://127.0.0.1:8000/redoc
 
 ## Docker
 
@@ -217,8 +209,6 @@ Para encerrar os serviços:
 ```bash
 docker compose down
 ```
-
----
 
 ## Autenticação
 
@@ -269,8 +259,6 @@ Authorization: Bearer <jwt>
 
 A documentação completa dos endpoints está disponível no Swagger em `/docs`.
 
----
-
 ## Migrations
 
 O projeto usa Alembic para versionamento do schema do banco de dados.
@@ -280,8 +268,6 @@ alembic revision --autogenerate -m "descricao_da_migration"
 alembic upgrade head
 alembic downgrade -1
 ```
-
----
 
 ## Testes
 
@@ -305,8 +291,6 @@ pytest tests/projects -q
 pytest tests/tasks -q
 ```
 
----
-
 ## Segurança
 
 - Senhas protegidas por hash seguro.
@@ -317,8 +301,9 @@ pytest tests/tasks -q
 - Eventos de auditoria processados de forma assíncrona com Celery.
 - Arquivos de log gerados localmente não são versionados.
 
----
-
 ## Próximos passos
 
 - Revisar os endpoints com base no OWASP API Security Top 10.
+- Implementar worker do Celery em produção.
+- Adicionar testes de permissão e isolamento entre organizações.
+- Melhorar a experiência do frontend com filtros, status e detalhes das tarefas.
