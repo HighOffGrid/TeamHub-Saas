@@ -1,7 +1,7 @@
 import json
 from typing import List, Annotated
 from pydantic import field_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict, NoDecode, SettingsConfigDict
+from pydantic_settings import BaseSettings, SettingsConfigDict, NoDecode
 
 
 class Settings(BaseSettings):
@@ -37,3 +37,6 @@ class Settings(BaseSettings):
                 return json.loads(v)
             return [origin.strip() for origin in v.split(",") if origin.strip()]
         return v
+
+
+settings = Settings()
