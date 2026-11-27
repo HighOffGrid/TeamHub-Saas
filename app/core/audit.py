@@ -1,9 +1,13 @@
 from pathlib import Path
 from datetime import datetime, UTC
 from app.core.celery_app import celery_app
+import logging
+
+logger = logging.getLogger(__name__)
 
 LOG_DIR = Path("logs")
 AUDIT_FILE = LOG_DIR / "audit.log"
+
 
 @celery_app.task(bind=True, max_retries=3, default_retry_delay=5)
 def write_audit_log(self, action: str, actor_id: str, target: str, metadata: str = ""):
@@ -16,5 +20,9 @@ def write_audit_log(self, action: str, actor_id: str, target: str, metadata: str
     except Exception as exc:
         raise self.retry(exc=exc)
 
+
 def dispatch_audit_log(action: str, actor_id: str, target: str, metadata: str = ""):
-    write_audit_log.delay(action, actor_id, target, metadata)
+    try:
+        write_audit_log.delay(action, actor_id, target, metadata)
+    except Exception:
+        logger.exception("Falha ao enfileirar audit log")
