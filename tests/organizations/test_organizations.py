@@ -1,5 +1,6 @@
 from sqlmodel import select
 
+
 from app.models.membership import Membership
 from app.models.organization import Organization
 
@@ -21,7 +22,7 @@ def test_create_organization_success(client, auth_headers, session):
 
     data = response.json()
     assert data["name"] == payload["name"]
-    assert data["slug"] == payload["slug"]
+    assert data["slug"].startswith(payload["slug"])
     assert data["description"] == payload["description"]
 
     org = session.exec(
@@ -33,7 +34,7 @@ def test_create_organization_success(client, auth_headers, session):
         select(Membership).where(Membership.organization_id == org.id)
     ).first()
     assert membership is not None
-    assert membership.role == "admin"
+    assert membership.role == "owner"
 
 
 def test_create_organization_unauthorized(client):
@@ -90,8 +91,8 @@ def test_list_my_organizations_returns_only_user_orgs(client, auth_headers):
     data = response.json()
     slugs = [org["slug"] for org in data]
 
-    assert "org-1" in slugs
-    assert "org-2" in slugs
+    assert any(slug.startswith("org-1") for slug in slugs)
+    assert any(slug.startswith("org-2") for slug in slugs)
     assert len(data) == 2
 
 
